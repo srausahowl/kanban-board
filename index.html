@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Kanban Board</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:32px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}h1{font-size:24px}
+.add-btn{background:#8b5cf6;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-weight:600;cursor:pointer;font-size:14px}
+.board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px}
+.column{background:#1e293b;border-radius:12px;min-width:280px;width:280px;flex-shrink:0;padding:16px}
+.col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.col-header h3{font-size:15px;display:flex;align-items:center;gap:8px}.col-header .count{background:#334155;padding:2px 8px;border-radius:12px;font-size:12px;color:#94a3b8}
+.cards{min-height:60px;display:flex;flex-direction:column;gap:10px}
+.card{background:#334155;border-radius:10px;padding:14px;cursor:grab;transition:border-color .15s;border:1px solid transparent}
+.card:hover{border-color:#475569}.card.dragging{opacity:0.4}
+.card .card-title{font-weight:600;margin-bottom:6px;font-size:14px}.card .card-meta{display:flex;gap:8px}
+.tag{padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}.tag-feat{background:rgba(56,97,251,0.2);color:#3861fb}.tag-bug{background:rgba(239,68,68,0.2);color:#ef4444}.tag-ux{background:rgba(139,92,246,0.2);color:#8b5cf6}
+.add-card{background:transparent;border:1px dashed #475569;border-radius:8px;padding:10px;color:#64748b;cursor:pointer;font-size:13px;width:100%;margin-top:8px}
+.add-card:hover{border-color:#64748b;color:#94a3b8}
+.card .del{float:right;background:none;border:none;color:#64748b;cursor:pointer;font-size:16px}.card .del:hover{color:#ef4444}
+.cards.drag-over{background:rgba(139,92,246,0.1);border-radius:8px}
+</style></head><body><header><h1>Kanban Board</h1><button class="add-btn" onclick="addColumn()">+ Column</button></header>
+<div class="board" id="board"></div>
+<script>
+let data={todo:{title:"To Do",color:"#64748b",cards:[{title:"Design system",tag:"feat"},{title:"Fix login bug",tag:"bug"},{title:"User research",tag:"ux"}]},prog:{title:"In Progress",color:"#3861fb",cards:[{title:"Build dashboard",tag:"feat"},{title:"API integration",tag:"feat"}]},done:{title:"Done",color:"#22c55e",cards:[{title:"Setup CI/CD",tag:"feat"}]}};
+let dragIdx=null,dragFrom=null;
+function render(){const b=document.getElementById("board");b.innerHTML="";for(const k in data){const col=data[k];let h='<div class="column"><div class="col-header"><h3><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+col.color+'"></span>'+col.title+'</h3><span class="count">'+col.cards.length+'</span></div><div class="cards" data-col="'+k+'">';col.cards.forEach((c,i)=>{h+='<div class="card" draggable="true" data-col="'+k+'" data-i="'+i+'"><button class="del" onclick="del(\''+k+'\','+i+')">&times;</button><div class="card-title">'+c.title+'</div><div class="card-meta"><span class="tag tag-'+c.tag+'">'+c.tag+'</span></div></div>'});h+='</div><button class="add-card" onclick="addCard(\''+k+'\')">+ Add card</button></div>';b.insertAdjacentHTML("beforeend",h)}
+document.querySelectorAll(".card").forEach(card=>{card.addEventListener("dragstart",e=>{dragIdx=parseInt(card.dataset.i);dragFrom=card.dataset.col;card.classList.add("dragging")});card.addEventListener("dragend",e=>card.classList.remove("dragging"))});
+document.querySelectorAll(".cards").forEach(el=>{el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("drag-over")});el.addEventListener("dragleave",e=>el.classList.remove("drag-over"));el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("drag-over");const to=el.dataset.col;if(dragFrom===null)return;const card=data[dragFrom].cards.splice(dragIdx,1)[0];data[to].cards.push(card);dragFrom=null;render()})})}
+function addCard(k){const t=prompt("Card title:");if(t){data[k].cards.push({title:t,tag:"feat"});render()}}
+function del(k,i){data[k].cards.splice(i,1);render()}
+function addColumn(){const n=prompt("Column name:");if(n){const id="c"+Date.now();data[id]={title:n,color:"#8b5cf6",cards:[]};render()}}
+render()
+</script></body></html>
